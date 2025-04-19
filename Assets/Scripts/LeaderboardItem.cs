@@ -2,29 +2,34 @@ using UnityEngine;
 
 public class LeaderboardItem : MonoBehaviour
 {
-    [SerializeField] private RectTransform body;
+    [SerializeField] private RectTransform _rect;
+    [SerializeField] private RectTransform _body;
 
-    public bool hasBody { get; private set; } = true;
+    public RectTransform rect => _rect;
+    public RectTransform body => _body;
 
-    public void UnhookBody(Transform parent)
+    private bool isBodyHooked = true;
+
+    public void UnhookBody(Transform parent, Bounds bounds)
     {
-        if (!hasBody) return;
-        Debug.Log("UnhookBody");
-        hasBody = false;
-        body.SetParent(parent);
+        if (!isBodyHooked) return;
+
+        isBodyHooked = false;
+        _body.SetParent(parent);
+
+        bool isBottom = transform.position.y < bounds.center.y;
+        var bodyPos = _body.transform.position;
+
+        bodyPos.y = isBottom ? bounds.min.y : bounds.max.y;
+        _body.transform.position = bodyPos;
     }
 
     public void HookBody()
     {
-        if (hasBody) return;
-        Debug.Log("HookBody");
-        hasBody = true;
-        body.SetParent(transform);
-        body.localPosition = Vector3.zero;
-    }
-
-    public Vector3 GetBodyWorldSize()
-    {
-        return ScriptUtils.GetWorldBoundsFromRect(body).size;
+        if (isBodyHooked) return;
+        
+        isBodyHooked = true;
+        _body.SetParent(transform);
+        _body.localPosition = Vector3.zero;
     }
 }
